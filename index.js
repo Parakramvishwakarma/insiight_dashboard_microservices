@@ -20,24 +20,33 @@ const getInsiightClientNames = async () => {
 
 };
 
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 const main = async () => {
-    let statusChanges = {}
-    try {
-        const clients = await getInsiightClientNames();
-        for (const client of clients) {
-            console.log(`Processing client: ${client.client_name} (${client.client_id})`);
-            const clientPool = getClientPool(client.client_id);
-            let campaignsStatusChanged = await updateCampaignStatuses(clientPool, client.client_id);
-            if (campaignsStatusChanged){
-                statusChanges[client.client_id] = campaignsStatusChanged;
-                console.log(`Client: ${client.client_name} (${client.client_id}) - Campaigns Status Changed:`, campaignsStatusChanged);
+    while (true) {
+        let statusChanges = {}
+        try {
+            console.log(`Starting campaign status check at ${new Date().toLocaleString('en-AU', { timeZone: 'Australia/Perth' })} AWST`);
+            const clients = await getInsiightClientNames();
+            for (const client of clients) {
+                console.log(`Processing client: ${client.client_name} (${client.client_id})`);
+                const clientPool = getClientPool(client.client_id);
+                let campaignsStatusChanged = await updateCampaignStatuses(clientPool, client.client_id);
+                if (campaignsStatusChanged){
+                    statusChanges[client.client_id] = campaignsStatusChanged;
+                    console.log(`Client: ${client.client_name} (${client.client_id}) - Campaigns Status Changed:`, campaignsStatusChanged);
+                }
+                if (Object.keys(statusChanges).length > 0) {
+                    sendEmailNotification(statusChanges);
+                }
             }
-            if (Object.keys(statusChanges).length > 0) {
-                sendEmailNotification(statusChanges);
-            }
+        } catch (error) {
+            console.error('Error in main execution:', error);
         }
-    } catch (error) {
-        console.error('Error in main execution:', error);
+        
+        // Wait 24 hours before running again
+        console.log(`Waiting 24 hours until next check...`);
+        await sleep(24 * 60 * 60 * 1000); // 24 hours in milliseconds
     }
 };
 
