@@ -15,22 +15,39 @@ const getInsiightClientNames = async () => {
     finally {
         await insiightPool.end();
     }
-    const pool = getClientPool(parent_org_id);
 
 };
 
 const main = async () => {
+    let statusChanges = {}
     try {
         const clients = await getInsiightClientNames();
         for (const client of clients) {
+            console.log(`Processing client: ${client.client_name} (${client.client_id})`);
             const clientPool = getClientPool(client.client_id);
             let campaignsStatusChanged = await updateCampaignStatuses(clientPool, client.client_id);
-            console.log(`Client: ${client.client_name} (${client.client_id}) - Campaigns Status Changed:`, campaignsStatusChanged);
+            if (campaignsStatusChanged){
+                statusChanges[client.client_id] = campaignsStatusChanged;
+                console.log(`Client: ${client.client_name} (${client.client_id}) - Campaigns Status Changed:`, campaignsStatusChanged);
+            }
         }
-        console.log('Insiight Clients:', );
     } catch (error) {
         console.error('Error in main execution:', error);
     }
 };
+
+const sendEmailNotification = async (statusChanges) => {
+    if (Object.keys(statusChanges).length === 0) {
+        console.log('No campaign status changes to report.');
+        return;
+    }
+
+    // Implement email sending logic here using preferred email service
+    console.log('Sending email notification for the following status changes:', statusChanges);
+}
+
+
+
+
 
 main();

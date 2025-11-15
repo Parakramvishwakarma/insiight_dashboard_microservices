@@ -50,7 +50,7 @@ export function getClientPool(clientId) {
 
   // Store pool in cache
   poolCache.set(clientId, pool);
-  console.log(`Created new pool for client "${clientId}" (total pools: ${poolCache.size})`);
+  // console.log(`Created new pool for client "${clientId}" (total pools: ${poolCache.size})`);
   
   return pool;
 }
@@ -59,7 +59,7 @@ export function getClientPool(clientId) {
 export function closeAllPools() {
   const promises = [];
   for (const [clientId, pool] of poolCache.entries()) {
-    console.log(`Closing pool for client "${clientId}"`);
+    // console.log(`Closing pool for client "${clientId}"`);
     promises.push(pool.end());
   }
   poolCache.clear();
@@ -71,7 +71,7 @@ export function closeClientPool(clientId) {
   if (poolCache.has(clientId)) {
     const pool = poolCache.get(clientId);
     poolCache.delete(clientId);
-    console.log(`Closed pool for client "${clientId}"`);
+    // console.log(`Closed pool for client "${clientId}"`);
     return pool.end();
   }
   return Promise.resolve();

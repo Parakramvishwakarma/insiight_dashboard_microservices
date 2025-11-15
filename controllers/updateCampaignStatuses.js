@@ -23,7 +23,7 @@ const updateCampaignStatuses = async (clientPool, clientId) => {
                     campaignsStatusChanged.activated.push(row.campaign_id);
                 }
             }
-            return campaignsStatusChanged;
+            return campaignsStatusChanged.activated.length > 0 || campaignsStatusChanged.completed.length > 0 ? campaignsStatusChanged : null;
         }
     }
     catch (error) {
@@ -37,10 +37,10 @@ const updateCampaignStatuses = async (clientPool, clientId) => {
 
 
 const handleActiveRows = async (activeRows, clientPool) => {
+    let completed = []
     for (const row of activeRows) {
         // Implement logic for active rows
-        console.log(`Handling active campaign ID: ${row.campaign_id}`);
-        const query = "SELECT * from sm_reporting_campaign_summery where campaign_id = ? ORDER BY last_updated_impression DESC LIMIT 1";
+        const query = "SELECT * from sm_reporting_campaign_summary where campaign_code = ? ORDER BY last_updated_impression DESC LIMIT 1";
         const [reportRows] = await clientPool.query(query, [row.campaign_id]);
         if (reportRows.length > 0) {
             const report = reportRows[0];
@@ -52,14 +52,13 @@ const handleActiveRows = async (activeRows, clientPool) => {
                 const updateQuery = 'UPDATE sm_inventory_campaign_management SET status = "completed" WHERE campaign_id = ?';
                 await clientPool.query(updateQuery, [row.campaign_id]);
                 console.log(`Campaign ID ${row.campaign_id} has reached its end date. Status updated to 'completed'`);
+                completed.push(row.campaign_id);
             }
-           
         }
-
     }
+    return completed;
 
 }
-
 
 export default updateCampaignStatuses;
 
