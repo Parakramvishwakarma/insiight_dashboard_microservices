@@ -24,8 +24,8 @@ const main = async () => {
         const clients = await getInsiightClientNames();
         for (const client of clients) {
             const clientPool = getClientPool(client.client_id);
-            const campaignRows = await updateCampaignStatuses(clientPool, client.client_id);
-            console.log(`Client: ${client.client_name}, Campaigns:`, campaignRows);
+            let campaignsStatusChanged = await updateCampaignStatuses(clientPool, client.client_id);
+            console.log(`Client: ${client.client_name} (${client.client_id}) - Campaigns Status Changed:`, campaignsStatusChanged);
         }
         console.log('Insiight Clients:', );
     } catch (error) {
